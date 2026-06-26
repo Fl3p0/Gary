@@ -148,7 +148,7 @@ class GarryPet:
                 target_y = mon_y + (mon_h / 2.0) - (float(pixmap.height()) / 2.0)
 
                 self.x = max(mon_x, min(target_x, mon_x + mon_w - float(pixmap.width())))
-                self.y = max(mon_y, min(target_y, mon_y + mon_h - float(pixmap.height())))
+                self.y = max(mon_y, min(self.y, mon_y + mon_h - float(pixmap.height())))
 
                 self.switch_workspace(target_ws_id)
                 self.apply_move()
@@ -238,6 +238,19 @@ class GarryPet:
 instances.append(GarryPet())
 
 
+def send_garry_fact():
+    try:
+        fact = subprocess.check_output(["shuf", "-n", "1", "facts.txt"], text=True).strip()
+        subprocess.run(["notify-send", "Garry:", fact])
+    except Exception:
+        pass
+
+
+fact_timer = QTimer()
+fact_timer.timeout.connect(send_garry_fact)
+fact_timer.start(30 * 60 * 1000)
+
+
 def command_loop():
     global pending_commands
 
@@ -290,6 +303,10 @@ def main_tick():
                 targets.append(instances[idx - 1])
         else:
             targets = list(instances)
+
+        if cmd_string == "fact":
+            send_garry_fact()
+            continue
 
         if cmd_string == "clone":
             instances.append(GarryPet())
